@@ -40,17 +40,17 @@ cd /Users/$username/peviitor/search-engine
 pwd
 docker build -t fe:latest .
 docker run --name deploy_fe --network mynetwork --ip 172.18.0.13 --rm \
-    -v /Users/$username/peviitor/build:/app/build fe:latest npm run build:local
+    --platform linux/amd64 -v /Users/$username/peviitor/build:/app/build fe:latest npm run build:local
 rm -f /Users/$username/peviitor/build/.htaccess
 
 git clone https://github.com/peviitor-ro/api.git /Users/$username/peviitor/api
 cp -r /Users/$username/peviitor/api /Users/$username/peviitor/build
-docker run --name apache-container --network mynetwork --ip 172.18.0.11 -d -p 8080:80 \
+docker run --name apache-container --network mynetwork --ip 172.18.0.11 --platform linux/amd64 -d -p 8080:80 \
     -v /Users/$username/peviitor/build:/var/www/html sebiboga/php-apache:latest
 
 git clone https://github.com/peviitor-ro/solr.git /Users/$username/peviitor/solr
 sudo chmod -R 777 /Users/$username/peviitor
-docker run --name solr-container --network mynetwork --ip 172.18.0.10 -d -p 8983:8983 \
+docker run --name solr-container --network mynetwork --ip 172.18.0.10 --platform linux/amd64 -d -p 8983:8983 \
     -v /Users/$username/peviitor/solr/core/data:/var/solr/data solr:latest
 
 # Wait for Solr container to be ready
@@ -58,7 +58,8 @@ until [ "$(docker inspect -f {{.State.Running}} solr-container)" == "true" ]; do
     sleep 0.1;
 done;
 
-docker run --name data-migration --network mynetwork --ip 172.18.0.12 --rm sebiboga/peviitor-data-migration-local:latest
+docker run --name data-migration --network mynetwork --ip 172.18.0.12 --rm \
+    --platform linux/amd64 sebiboga/peviitor-data-migration-local:latest
 docker rmi sebiboga/peviitor-data-migration-local:latest
 
 echo "Script execution completed."
