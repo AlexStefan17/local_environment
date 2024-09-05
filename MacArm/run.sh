@@ -35,6 +35,7 @@ if [ -z "$(docker network ls | grep $network)" ]; then
   docker network create --subnet=172.18.0.0/16 $network
 fi
 
+docker pull node:alpine
 git clone https://github.com/peviitor-ro/search-engine.git /Users/$username/peviitor/search-engine
 cd /Users/$username/peviitor/search-engine
 pwd
